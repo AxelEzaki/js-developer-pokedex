@@ -12,6 +12,8 @@ function convertPokeApiDetailToPokemon(pokeDetail) {
     pokemon.types = types
     pokemon.type = type
 
+    pokemon.stats = pokeDetail.stats.map((stat) => stat.base_stat)
+
     pokemon.photo = pokeDetail.sprites.other.dream_world.front_default
 
     return pokemon
@@ -32,4 +34,33 @@ pokeApi.getPokemons = (offset = 0, limit = 5) => {
         .then((pokemons) => pokemons.map(pokeApi.getPokemonDetail))
         .then((detailRequests) => Promise.all(detailRequests))
         .then((pokemonsDetails) => pokemonsDetails)
+}
+
+pokeApi.getStatsPokemon = async (nomePokemon) => {
+    const urlBase = `https://pokeapi.co/api/v2/pokemon/${nomePokemon}/`
+    const pokemon = await fetch(urlBase)
+        .then((response) => response.json())
+        .then((resposta) => resposta)
+
+    const urlSpecie = `https://pokeapi.co/api/v2/pokemon-species/${nomePokemon}/`
+    const retornoSpecie = await fetch(urlSpecie)
+        .then((response) => response.json())
+        .then((jsonBody) => jsonBody.genera[7].genus)
+
+    const retornoPokemon = new Pokemon()
+    retornoPokemon.name = pokemon.name
+    retornoPokemon.number = pokemon.id
+
+    const types = pokemon.types.map((typeSlot) => typeSlot.type.name)
+    const [type] = types
+
+    retornoPokemon.types = types
+    retornoPokemon.type = type
+
+    retornoPokemon.photo = pokemon.sprites.other.dream_world.front_default
+
+    retornoPokemon.stats = pokemon.stats.map((stat) => stat.base_stat)
+    retornoPokemon.specie = retornoSpecie
+
+    return retornoPokemon
 }
